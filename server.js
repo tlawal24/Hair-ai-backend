@@ -11,7 +11,7 @@ app.use(express.json());
 
 const apiKey = process.env.GROQ_API_KEY;
 
-// POST route for chatbot messages
+// ✅ POST route for chatbot messages
 app.post("/chat", async (req, res) => {
   try {
     const userMessage = req.body.message;
@@ -29,11 +29,22 @@ app.post("/chat", async (req, res) => {
     });
 
     const data = await response.json();
+
+    // ✅ Defensive check for missing data
+    if (!data.choices || !data.choices[0]?.message?.content) {
+      return res.status(500).json({ error: "Invalid response from Groq API" });
+    }
+
     res.json({ reply: data.choices[0].message.content });
   } catch (error) {
-    console.error(error);
+    console.error("Error in /chat route:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
+});
+
+// ✅ Health check route (optional)
+app.get("/", (req, res) => {
+  res.send("Backend is running ✅");
 });
 
 // ✅ Required for Vercel
